@@ -39,7 +39,7 @@ async function release(files: Record<string, string>): Promise<{ url: string; cl
 }
 
 const haveTools = spawnSync("sh", ["-c", "command -v curl || command -v wget"]).status === 0;
-const supported = ["linux-x64", "linux-arm64"].includes(`${process.platform}-${process.arch}`);
+const supported = ["linux-x64", "linux-arm64", "darwin-arm64"].includes(`${process.platform}-${process.arch}`);
 
 test("install-binary.sh installs the asset for this machine after checking SHA256SUMS, and says when the folder is not on PATH", { skip: !haveTools || !supported }, async () => {
   const body = "#!/bin/sh\necho fake mw\n";

@@ -4,7 +4,7 @@
 #   curl -fsSLO https://raw.githubusercontent.com/manxzo/mergewright/main/scripts/install-binary.sh
 #   less install-binary.sh && sh install-binary.sh
 #
-# It picks the release asset for this machine (mw-linux-x64 or mw-linux-arm64),
+# It picks the release asset for this machine (mw-linux-x64, mw-linux-arm64 or mw-darwin-arm64),
 # downloads it with the release's SHA256SUMS, refuses to install when the checksum does not match,
 # and puts it at $MW_INSTALL_DIR/mw (default ~/.local/bin/mw). Nothing else is changed.
 #
@@ -20,7 +20,7 @@ die() { echo "install-binary: $*" >&2; exit 1; }
 
 case $(uname -s) in
   Linux) os=linux ;;
-  Darwin) die "macOS is not supported yet: MergeWright's run locks read /proc, which macOS does not have" ;;
+  Darwin) os=darwin ;;
   *) die "there is no mw release for $(uname -s); install with npm (npm i -g mergewright) on Node 24 instead" ;;
 esac
 case $(uname -m) in
