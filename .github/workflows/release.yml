@@ -56,12 +56,15 @@ jobs:
       - name: combine the checksums and check them
         working-directory: dist
         run: |
-          cat mw-*/SHA256SUMS | sort -k2 > SHA256SUMS
-          mv mw-*/mw-* .
+          # Each artifact folder is named like the binary inside it, so collect them in out/.
+          mkdir out
+          cat mw-*/SHA256SUMS | sort -k2 > out/SHA256SUMS
+          mv mw-*/mw-* out/
+          cd out
           sha256sum -c SHA256SUMS
           test "$(wc -l < SHA256SUMS)" -eq 2
       - name: create the release
-        working-directory: dist
+        working-directory: dist/out
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes mw-linux-x64 mw-linux-arm64 SHA256SUMS
