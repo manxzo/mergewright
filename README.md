@@ -44,7 +44,7 @@ The complete reference is [docs/specification.md](docs/specification.md).
 
 | Way | Command | Good for |
 |---|---|---|
-| Released single executable | download [`scripts/install-binary.sh`](scripts/install-binary.sh), read it, run `sh install-binary.sh` | A machine without Node (Linux x64 and arm64, Apple-silicon macOS) |
+| Released single executable | download [`scripts/install-binary.sh`](scripts/install-binary.sh), read it, run `sh install-binary.sh` | A machine without Node (Linux x64 and arm64) |
 | From a checkout | `git clone https://github.com/manxzo/mergewright && mergewright/scripts/install.sh` | A machine with Node 24 and git |
 | npm package | `npm run build && npm pack`, then `npm i -g mergewright-0.1.0.tgz` | Any machine with Node 24 |
 | Build the executable yourself | `scripts/build-binary.sh` makes `build/mw-<platform>-<arch>` (about 120 MB) and `build/SHA256SUMS` | Handing `mw` to a machine of the same platform |
@@ -217,8 +217,8 @@ service or a real agent CLI are skipped unless `MW_LIVE=1`.
 | Terminal UI: `mw tui` | Built, tested without a real terminal and tried by hand at 80 columns |
 | GUI: `mw ui` | Built; the server and its security checks are tested; the page was checked by hand in one browser, with no automated browser test and no screen-reader check |
 | Notifications, usage guard, Gitea and GitHub merge | Built, tested against simulated programs and servers only |
-| Single executable | Built and tested on Linux x64 on a machine without Node; the Linux arm64 and macOS builds are produced by the release workflow |
-| Windows | Not supported |
+| Single executable | Built by the release workflow for Linux x64 and arm64, each tested on a machine without Node |
+| macOS and Windows | Not supported yet. On macOS the run locks need a port: they read `/proc` to tell a live process from a reused process id |
 
 ## Running the tests
 

@@ -7,7 +7,7 @@ single executable. Pick one install form:
 |---|---|---|
 | From a checkout | `scripts/install.sh` copies the committed runtime to `~/.local/share/mergewright` and puts `mw` in `~/.local/bin`; run it again after pulling to update | Working on MergeWright itself |
 | npm package | `npm i -g mergewright` (or a `.tgz` from `npm pack`) | Machines with Node 24 |
-| Single executable, released | `scripts/install-binary.sh` downloads the release's `mw` for this machine and checks it (below) | Machines without Node: Linux x64 and arm64, Apple-silicon macOS |
+| Single executable, released | `scripts/install-binary.sh` downloads the release's `mw` for this machine and checks it (below) | Machines without Node: Linux x64 and arm64 |
 | Single executable, built here | `scripts/build-binary.sh` (or `npm run build:binary`) makes `build/mw-<platform>-<arch>`, with `build/mw` a symbolic link to it and `build/SHA256SUMS` beside them; the result needs no Node | Building for this machine's platform (it cannot cross-build) |
 
 Then `mw init` in any repository makes it a MergeWright project; `mw version` says which build is
@@ -24,9 +24,8 @@ less install-binary.sh
 sh install-binary.sh
 ```
 
-It picks the asset for this machine (`mw-linux-x64`, `mw-linux-arm64` or `mw-darwin-arm64`; there is
-none for Intel Macs, Windows or other processors, which install with `npm i -g mergewright` on Node 24
-instead), downloads it with the release's `SHA256SUMS`, refuses to install when the checksum does
+It picks the asset for this machine (`mw-linux-x64` or `mw-linux-arm64`; there is none for other
+processors, and macOS and Windows are not supported yet), downloads it with the release's `SHA256SUMS`, refuses to install when the checksum does
 not match, and puts it at `$MW_INSTALL_DIR/mw`. Nothing else is changed. It reads three variables:
 
 | Variable | Default | Means |
