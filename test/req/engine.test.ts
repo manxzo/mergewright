@@ -23,7 +23,7 @@ import type { Mcp } from "../../src/model/mcp.ts";
 import type { Role } from "../../src/model/role.ts";
 import { work } from "../../src/work.ts";
 import { as, brief, fakeHub, fakeIntegrations, handoff, hubPair, project, run, runPath, script, setRoles, useScript } from "../engine-helpers.ts";
-import { git, kanbanConfig, mem0Config, mw, MW, newProject, patchConfig, read, tmpDir, write } from "../helpers.ts";
+import { git, kanbanConfig, mem0Config, mw, MW, newProject, patchConfig, procState, read, tmpDir, write } from "../helpers.ts";
 import { processIdentity } from "../../src/engine/procid.ts";
 import net from "node:net";
 import os from "node:os";
@@ -46,17 +46,8 @@ import http from "node:http";
 /** True while `pid` exists and is not a zombie. */
 function alive(pid: number): boolean {
   if (!(pid > 0)) return false;
-  try {
-    const stat = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
-    return stat.slice(stat.lastIndexOf(")") + 2)[0] !== "Z";
-  } catch {
-    try {
-      process.kill(pid, 0);
-      return true;
-    } catch {
-      return false;
-    }
-  }
+  const state = procState(pid);
+  return state !== undefined && state !== "Z";
 }
 
 function killAll(pids: number[]): void {
@@ -1183,7 +1174,7 @@ test("Queue.flush skips an item a running process holds, however old the hold, a
   const edit = (file: string, patch: Record<string, unknown>) => fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(fs.readFileSync(file, "utf8")), ...patch }, null, 2) + "\n");
   const own = JSON.parse(fs.readFileSync(live, "utf8"));
   assert.equal(own.holdPid, process.pid);
-  if (fs.existsSync("/proc/self/stat")) assert.match(own.holdStart ?? "", /^\d+$/, "the holder's start time is recorded where /proc exists");
+  if (fs.existsSync("/proc/self/stat") || process.platform === "darwin") assert.match(own.holdStart ?? "", /^\d+$/, "the holder's start time is recorded where it can be read (/proc, or ps on macOS)");
   // A live holder whose hold is a day old still holds it: a hold ends with its process, not with its age.
   edit(old, { holdSince: new Date(Date.now() - 24 * 3600_000).toISOString() });
   edit(dead, { holdPid: deadPid() });
@@ -2007,7 +1998,7 @@ for (const second of ["SIGTERM", "SIGINT"] as const) {
   });
 }
 
-test("REQ-engine-011 AC-3: install.sh brings the installed mw-work@ unit level with ops/ through install-service.sh, which installs that file, reloads systemd and restarts nothing", () => {
+test("REQ-engine-011 AC-3: install.sh brings the installed mw-work@ unit level with ops/ through install-service.sh, which installs that file, reloads systemd and restarts nothing", { skip: process.platform !== "linux" && "install-service.sh installs systemd units, and systemd (with getent) exists only on Linux" }, () => {
   // @req REQ-engine-011
   const installer = fs.readFileSync(path.join(PACKAGE_ROOT, "scripts", "install.sh"), "utf8");
   assert.match(installer, /install-service\.sh" unit --check/, "install.sh checks the installed unit");

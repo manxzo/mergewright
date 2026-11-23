@@ -25,7 +25,7 @@ export interface QueueItem {
   holdPid?: number;
   /** ISO time the hold was set (for people reading `mw queue`; it never expires a hold). */
   holdSince?: string;
-  /** The holder's start time (`/proc/<pid>/stat` field 22), so a reused pid is not taken for it; absent without `/proc`. */
+  /** The holder's start time (`readStat`), so a reused pid is not taken for it; absent where it cannot be read. */
   holdStart?: string;
 }
 

@@ -11,7 +11,7 @@ import { abort, runCard, usageTotals } from "../src/engine/run.ts";
 import type { RunState } from "../src/engine/types.ts";
 import { paidHarness } from "../src/integrations/usage.ts";
 import { Project } from "../src/project.ts";
-import { codes, mw, read, tmpDir, write } from "./helpers.ts";
+import { codes, mw, procStart, read, tmpDir, write } from "./helpers.ts";
 import { branchExists, fakeHub, fakeIntegrations, hubPair, project, run, runPath, script, state, useScript } from "./engine-helpers.ts";
 
 
@@ -41,11 +41,7 @@ function fakeClaude(): { bin: string; ran: string } {
   return { bin, ran };
 }
 
-/** Field 22 of /proc/<pid>/stat (the identity a lock or orphans record carries). */
-function startTime(pid: number): string {
-  const text = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
-  return text.slice(text.lastIndexOf(")") + 2).split(" ")[19]!;
-}
+const startTime = procStart;
 
 function sleeper(): { pid: number; stop: () => void } {
   const c = spawn("sleep", ["60"], { stdio: "ignore", detached: true });

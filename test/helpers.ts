@@ -1,5 +1,5 @@
 // Shared test fixtures: throwaway projects in the system temp directory.
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -15,6 +15,36 @@ import { Project } from "../src/project.ts";
 
 export const MW = path.join(PACKAGE_ROOT, "bin", "mw.js");
 
+/** `ps -o <field>= -p <pid>` on macOS (UTC, C locale), or undefined when there is no such process. */
+function psField(pid: number, field: string): string | undefined {
+  try {
+    return execFileSync("ps", ["-o", `${field}=`, "-p", String(pid)], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], env: { ...process.env, LC_ALL: "C", TZ: "UTC0" } }).trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * The start time a lock or orphans record carries for `pid`, read here independently of the runtime:
+ * field 22 of /proc/<pid>/stat on Linux, the `ps` start time in seconds since the epoch on macOS.
+ */
+export function procStart(pid: number): string {
+  if (process.platform === "darwin") return String(Date.parse(`${psField(pid, "lstart")} UTC`) / 1000);
+  const text = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
+  return text.slice(text.lastIndexOf(")") + 2).split(" ")[19]!;
+}
+
+/** The one-letter state of `pid` (Z for a zombie), or undefined when there is no such process. */
+export function procState(pid: number): string | undefined {
+  if (process.platform === "darwin") return psField(pid, "stat")?.[0];
+  try {
+    const text = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
+    return text.slice(text.lastIndexOf(")") + 2).split(" ")[0];
+  } catch {
+    return undefined;
+  }
+}
+
 const created: string[] = [];
 // Each test file runs in its own process; remove what it created when that process ends, so
 // repeated runs do not fill the temporary filesystem (thousands of small git repositories).
@@ -29,8 +59,12 @@ process.on("exit", () => {
   }
 });
 
+// Resolved once: on macOS the temp folder (/var/folders/...) is a symlink to /private/var/folders/...,
+// and the runtime reports resolved paths.
+const TMP_ROOT = fs.realpathSync(os.tmpdir());
+
 export function tmpDir(prefix = "mw-"): string {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  const d = fs.mkdtempSync(path.join(TMP_ROOT, prefix));
   created.push(d);
   return d;
 }

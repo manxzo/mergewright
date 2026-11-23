@@ -19,7 +19,7 @@ import { PACKAGE_ROOT } from "../src/paths.ts";
 import { Project } from "../src/project.ts";
 import * as util from "../src/util.ts";
 import { work } from "../src/work.ts";
-import { git, mw, read, tmpDir, write } from "./helpers.ts";
+import { git, mw, procStart, procState, read, tmpDir, write } from "./helpers.ts";
 import { branchExists, fakeHub, fakeIntegrations, lockPath, project, run, runPath, script, setRoles, state, useScript } from "./engine-helpers.ts";
 
 
@@ -42,20 +42,7 @@ async function waitFor(what: string, f: () => boolean, ms = 20_000): Promise<voi
   }
 }
 
-/** Field 22 of /proc/<pid>/stat, read here independently of the runtime. */
-function startTime(pid: number): string {
-  const text = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
-  return text.slice(text.lastIndexOf(")") + 2).split(" ")[19]!;
-}
-
-function procState(pid: number): string | undefined {
-  try {
-    const text = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
-    return text.slice(text.lastIndexOf(")") + 2).split(" ")[0];
-  } catch {
-    return undefined;
-  }
-}
+const startTime = procStart;
 
 /** A live process of this machine in a process group of its own (a detached `sleep`). */
 function sleeper(): { pid: number; stop: () => void } {
@@ -354,8 +341,9 @@ test("'mw work' stops taking cards and ends with the error when a group survives
 
 test("a zombie does not count as a live member of its process group", async () => {
   const dir = tmpDir("mw-zombie-");
-  // The shell starts a child in a group of its own, then becomes 'sleep', which never reaps it.
-  const parent = spawn("sh", ["-c", `setsid sleep 0.2 & echo $! > '${path.join(dir, "z")}'; exec sleep 30`], { stdio: "ignore" });
+  // The shell starts a child in a group of its own (perl's setpgrp: macOS has no setsid), then becomes
+  // 'sleep', which never reaps it.
+  const parent = spawn("sh", ["-c", `perl -e 'setpgrp(0, 0); exec @ARGV' sleep 0.2 & echo $! > '${path.join(dir, "z")}'; exec sleep 30`], { stdio: "ignore" });
   try {
     await waitFor("the child's pid", () => fs.existsSync(path.join(dir, "z")) && read(dir, "z").trim() !== "");
     const z = Number(read(dir, "z"));
@@ -374,6 +362,18 @@ test("a zombie does not count as a live member of its process group", async () =
   fields[2] = "77";
   fields[19] = "123456";
   assert.deepEqual(procid.parseStat(`42 (odd) name (x)) ${fields.join(" ")}`), { pid: 42, state: "Z", pgrp: 77, started: "123456" });
+});
+
+test("on macOS the process facts come from ps: recorded output is parsed to the same facts", async () => {
+  const procid = (await import("../src/engine/procid.ts").catch(() => ({}))) as { parsePsLine?: (l: string) => { pid: number; state: string; pgrp: number; started: string } | undefined };
+  assert.ok(procid.parsePsLine, "parsePsLine exists");
+  // Lines of `ps -o pid=,pgid=,stat=,lstart=` as macOS prints them with LC_ALL=C and TZ=UTC0.
+  assert.deepEqual(procid.parsePsLine("  412   412 Ss   Mon Nov 24 09:05:07 2026"), { pid: 412, pgrp: 412, state: "S", started: String(Date.UTC(2026, 10, 24, 9, 5, 7) / 1000) });
+  assert.deepEqual(procid.parsePsLine("93857 93850 Z    Tue Nov  3 18:00:00 2026"), { pid: 93857, pgrp: 93850, state: "Z", started: String(Date.UTC(2026, 10, 3, 18, 0, 0) / 1000) });
+  assert.deepEqual(procid.parsePsLine("    1     1 Ss   Sat Jan  1 00:00:00 2000")?.started, "946684800");
+  // A pid reused a second later is another process: its start time differs.
+  assert.notEqual(procid.parsePsLine("500 500 S Mon Nov 24 09:05:07 2026")!.started, procid.parsePsLine("500 500 S Mon Nov 24 09:05:08 2026")!.started);
+  for (const bad of ["", "  PID  PGID STAT STARTED", "412 412 Ss", "412 412 Ss Mon Foo 24 09:05:07 2026"]) assert.equal(procid.parsePsLine(bad), undefined, bad);
 });
 
 // ── Runtime git gets a minimal environment ──────────────────────────────────────
