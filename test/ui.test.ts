@@ -91,8 +91,15 @@ test("ui: a POST from another origin, without application/json, or over 1 MB is 
   assert.equal((await post({ "Content-Type": "application/json; charset=utf-8" })).status, 200);
   assert.equal((await post({ "Content-Type": "application/json" }, "not json")).status, 400);
   assert.equal((await post({ "Content-Type": "application/json" }, "[1]")).status, 400);
-  const big = await post({ "Content-Type": "application/json" }, JSON.stringify({ query: "x".repeat(MAX_BODY) }));
-  assert.equal(big.status, 413);
+  // Only the headers are sent: the server refuses on the declared length, and a client still writing
+  // a megabyte into a connection the server has answered gets EPIPE on some systems.
+  const big = await new Promise<string>((resolve, reject) => {
+    const head = { Host: `127.0.0.1:${ui.port}`, ...auth, "Content-Type": "application/json", "Content-Length": String(MAX_BODY + 1) };
+    const s = net.connect(ui.port, "127.0.0.1", () => s.write(`POST /api/tool/mw_status HTTP/1.1\r\n${Object.entries(head).map(([k, v]) => `${k}: ${v}`).join("\r\n")}\r\n\r\n`));
+    s.once("data", (c) => { resolve(c.toString("utf8").split("\r\n")[0]!); s.destroy(); });
+    s.once("error", reject);
+  });
+  assert.match(big, /^HTTP\/1\.1 413 /);
   // Other methods are not accepted at all.
   assert.equal((await request(ui.port, { method: "PUT", path: "/api/tool/mw_status", headers: { ...auth, "Content-Type": "application/json" }, body: "{}" })).status, 405);
 });
