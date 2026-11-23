@@ -109,6 +109,8 @@ function assertMinimalEnv(rec: Record_, req: HarnessRequest, extra: string[] = [
   assert.equal(rec.env.SUPER_SECRET, undefined, "a parent variable leaked into the agent's environment");
   // PWD, SHLVL and _ are set by the fake's /bin/sh wrapper, not passed by the harness.
   const allowed = new Set([...BASE_KEYS, ...Object.keys(req.env), ...extra, "PWD", "SHLVL", "_"]);
+  // macOS adds __CF_USER_TEXT_ENCODING to the environment of every process it starts.
+  if (process.platform === "darwin") allowed.add("__CF_USER_TEXT_ENCODING");
   const unexpected = Object.keys(rec.env).filter((k) => !allowed.has(k));
   assert.deepEqual(unexpected, []);
   assert.equal(rec.env.MW_ROLE, "reviewer");
@@ -166,7 +168,15 @@ describe("claude harness", () => {
   test("write without a usable sandbox (no bubblewrap or socat): full tool set, no sandbox settings", async () => {
     const { req, record } = fakeReq({ mode: "write", outputKind: "handoff" }, { PATH: fakeBin });
     await claude.run(req);
-    assert.deepEqual(record().argv, [
+    const argv = record().argv;
+    if (process.platform === "darwin") {
+      // On macOS Claude Code's sandbox is Seatbelt, part of the system: no bubblewrap is needed, so it is on.
+      assert.equal(claudeSandbox(fakeBin).ok, true);
+      const at = argv.indexOf("--settings");
+      assert.ok(at > 0, "write mode on macOS runs with the sandbox settings");
+      argv.splice(at, 2);
+    }
+    assert.deepEqual(argv, [
       "-p", "--output-format", "json", "--setting-sources", "project,local",
       "--allowedTools", "Read", "Edit", "Write", "MultiEdit", "Grep", "Glob", "LS", "TodoWrite", "Bash",
       "--disallowedTools", ...DISALLOWED, "--strict-mcp-config", "--permission-mode", "dontAsk",
@@ -688,7 +698,7 @@ describe("shell harness MCP file and bounded output", () => {
   test("the shell harness creates its MCP file with mode 0600 even under umask 022", async () => {
     const old = process.umask(0o022);
     try {
-      const { req } = fakeReq({ role: role({ runs: "shell", command: `stat -c %a "$MW_MCP_CONFIG"; cat > /dev/null` }), mcp: MCP });
+      const { req } = fakeReq({ role: role({ runs: "shell", command: `stat -c %a "$MW_MCP_CONFIG" 2>/dev/null || stat -f %Lp "$MW_MCP_CONFIG"; cat > /dev/null` }), mcp: MCP });
       const r = await shell.run(req);
       assert.equal(r.ok, true, r.error);
       assert.equal(r.text, "600", "the file was private while the command ran");
