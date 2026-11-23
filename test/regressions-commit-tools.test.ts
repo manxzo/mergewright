@@ -204,7 +204,14 @@ test("install-service.sh accepts work and mw-work; usage without root; wrong arg
   const bad = spawnSync("bash", [script, "bogus"], { encoding: "utf8" });
   assert.equal(bad.status, 2, "a wrong first argument is a usage error, before the root check");
   assert.match(bad.stderr, /work\|mw-work/);
-  if (process.getuid?.() !== 0) {
+  // Without systemd (macOS, or a system with no systemctl) it refuses and says why; '--check' finds nothing installed.
+  const noSystemd = { ...process.env, MW_SYSTEMCTL: "/nonexistent/systemctl" };
+  const refused = spawnSync("bash", [script, "work", "x"], { encoding: "utf8", env: noSystemd });
+  assert.equal(refused.status, 1);
+  assert.match(refused.stderr, /this system has no systemd/);
+  assert.equal(spawnSync("bash", [script, "unit", "--check"], { encoding: "utf8", env: noSystemd }).status, 0);
+  // The root check comes after the systemd check, so it is reached only where systemd is.
+  if (process.getuid?.() !== 0 && process.platform === "linux") {
     for (const kind of ["work", "mw-work"]) {
       const r = spawnSync("bash", [script, kind, "x"], { encoding: "utf8" });
       assert.equal(r.status, 1, `${kind} is accepted (it stops at the root check): ${r.stderr}`);

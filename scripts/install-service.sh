@@ -26,6 +26,13 @@ case $kind in
   unit) case $arg in ""|--check) ;; *) echo "$usage" >&2; exit 2 ;; esac ;;
   *) echo "$usage" >&2; exit 2 ;;
 esac
+# MW_SYSTEMCTL exists for the tests (a fake systemctl).
+if ! command -v "${MW_SYSTEMCTL:-systemctl}" >/dev/null 2>&1; then
+  # Without systemd no unit is installed, so none is out of date.
+  [ "$kind" = unit ] && [ "$arg" = --check ] && exit 0
+  echo "install-service.sh: this system has no systemd (systemctl is not on PATH). The units in ops/ are for Linux with systemd; on this system start 'mw work' another way." >&2
+  exit 1
+fi
 user=${SUDO_USER:-$USER}
 home=$(getent passwd "$user" | cut -d: -f6)
 [ -n "$home" ] || { echo "cannot find the home directory of $user" >&2; exit 1; }
