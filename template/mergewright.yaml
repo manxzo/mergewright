@@ -1,0 +1,55 @@
+# MergeWright project config. Run `mw check` after editing; `mw config set <key> <value>` validates for you.
+mergewright: "0.1"
+name: __PROJECT__
+description: ""
+extends: standard                 # preset that supplies roles, flows and gates; files here override it
+
+cards:
+  prefix: __PREFIX__              # card ids look like __PREFIX__-12
+  default_flow: standard
+
+git:
+  base: __BASE_BRANCH__
+  hub: __HUB__                    # git remote holding the shared repository state, or "none"
+  forge: {kind: none}             # gitea | github | none (none = merge locally, no pull requests)
+
+risk:
+  default: medium                 # low | medium | high | critical; high and above stop for you
+
+limits:
+  rounds: 2                       # fix rounds before a card stops and asks
+  turns: 60
+  minutes: 90
+
+trace:
+  require_tests: must             # none | must | should: which finished requirements need a test
+
+# Which model fills a role, without copying the role file. Uncomment to change.
+# roles:
+#   worker:        {model: opus}
+#   reviewer:      {model: gpt-5.6-terra}
+#   reviewer-deep: {model: gpt-5.6-sol}
+#   planner:       {runs: codex, model: gpt-5.6-terra}   # a role can also move to another agent
+
+# Services. Secrets are never written here: each key_env / token_env names an environment
+# variable, read from the environment or from ~/.config/mergewright/env on each machine.
+# `mw doctor` shows what is configured and reachable.
+# local_models:                     # roles with `runs: local`: an OpenAI-compatible endpoint
+#   endpoint: "http://localhost:8081/v1"   # for example a llama.cpp server
+#   key_env: LLAMACPP_API_KEY       # llama-server --api-key; sent as Authorization: Bearer
+#   # fallback: "http://localhost:11434/v1"  # tried when the endpoint is unreachable (Ollama)
+# docs:
+#   paths: [docs/**, README.md]
+# report:
+#   command: "notify-owner --subject {subject} --file {file}"   # any command; {subject} and {file} are filled in
+# usage:                            # pause before write phases when a usage window is nearly spent
+#   command: "path/to/usage-script"   # prints {"max_used": <percent>}
+#   pause_at_pct: 85
+#   resume_below_pct: 80
+# Add-ons come as packages. `mw add <name>` installs one and enables it under `packages`, where its own
+# settings go, e.g. for `mw add mem0`:  mem0: {url: "http://localhost:8888", key_env: MEM0_API_KEY}
+# and for `mw add letta`:              letta: {url: "http://localhost:8283", model: openai/gpt-4o-mini, embedding: openai/text-embedding-3-small}
+# and for `mw add open-notebook`:      open-notebook: {url: "http://localhost:5055", key_env: OPEN_NOTEBOOK_PASSWORD}
+# and for `mw add cline-kanban`:       cline-kanban: {}   # cards shown on a Kanban board; path: the board's checkout
+# git:
+#   forge: {kind: gitea, url: "https://gitea.example.com", repo: owner/name, token_env: GITEA_TOKEN}

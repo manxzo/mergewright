@@ -1,0 +1,29 @@
+name: board-4ga
+version: 0.1.0
+description: Mirrors each card's status on a 4ga Boards board (one card per MergeWright card, in the list of its status) over the 4ga Boards API, and reconciles the board.
+apiVersion: 1
+entry: index.mjs
+exports: [mirrorCard, reconcile, deliverers, commands, checks]
+secrets:
+  - { config: client_id_env, default: BOARD_4GA_CLIENT_ID }
+  - { config: client_secret_env, default: BOARD_4GA_CLIENT_SECRET }
+config:
+  type: object
+  additionalProperties: false
+  required: [url, board]
+  properties:
+    url:
+      type: string
+      description: The 4ga Boards server, e.g. http://192.0.2.10:3000 (the /api prefix is added when missing)
+    board:
+      type: [string, integer]
+      pattern: "^[0-9]+$"
+      description: The id of the board to mirror to (the number in the board's address, /boards/<id>)
+    client_id_env:
+      type: string
+      pattern: "^[A-Za-z_][A-Za-z0-9_]*$"
+      description: The environment variable that holds the API client's id (sent as X-Client-Id); default BOARD_4GA_CLIENT_ID
+    client_secret_env:
+      type: string
+      pattern: "^[A-Za-z_][A-Za-z0-9_]*$"
+      description: The environment variable that holds the API client's secret (sent as X-Client-Secret); default BOARD_4GA_CLIENT_SECRET

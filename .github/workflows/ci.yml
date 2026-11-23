@@ -1,0 +1,26 @@
+# CI: typecheck and the test suite on linux-x64. The scrub test's private term list is not
+# available here by design (MW_SCRUB_TERMS is unset); its generic patterns still run.
+# Actions are pinned by major tag.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: node --test --test-reporter=dot 'test/**/*.test.ts'
+        env:
+          MW_DELEGATE_ALLOW_MOCK: "1"

@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/output/brief",
+  "title": "MergeWright output: brief",
+  "type": "object",
+  "properties": {
+    "summary": {
+      "type": "string"
+    },
+    "approach": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "guards": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "docs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risk": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "deep_review": {
+      "type": "boolean"
+    },
+    "ready": {
+      "type": "boolean"
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "summary",
+    "approach",
+    "scope",
+    "acceptance",
+    "guards",
+    "docs",
+    "risk",
+    "deep_review",
+    "ready",
+    "blockers"
+  ],
+  "additionalProperties": false
+}

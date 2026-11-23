@@ -1,0 +1,29 @@
+id: quick
+description: For small low-risk cards. No brief; the card itself is the boundary.
+phases:
+  - id: implement
+    role: worker
+    stop: {when: "risk >= high", ask: go}
+    on: {fail: remediate}
+  - id: gate
+    gate: default
+    on: {fail: remediate}
+  - id: review
+    role: reviewer
+  - id: adjudicate
+    role: adjudicator
+    when: "findings.blocking > 0"
+    on: {reject: remediate}
+  - id: merge
+    action: merge
+    stop:
+      - {when: "adjudication.conditions > 0", ask: conditions}
+      - {when: "risk >= high", ask: merge}
+  - id: reflect
+    role: reflector
+    action: memory.update
+  - id: docs
+    action: docs.sync
+remediate:
+  phase: implement
+  max_rounds: 1

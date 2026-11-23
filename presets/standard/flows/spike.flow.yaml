@@ -1,0 +1,8 @@
+id: spike
+description: Explore on a branch and report. Never merges; the branch is kept for reading.
+phases:
+  - id: explore
+    role: worker
+  - id: reflect
+    role: reflector
+    action: memory.update

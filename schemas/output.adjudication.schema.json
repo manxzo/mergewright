@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/output/adjudication",
+  "title": "MergeWright output: adjudication",
+  "type": "object",
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "reject",
+        "block"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "accepted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rejected": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "conditions": {
+      "type": "array",
+      "description": "With approve: what must be done before the merge (the run stops at the stop point 'conditions' until the owner approves).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "what": {
+            "type": "string"
+          },
+          "how": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "what",
+          "how"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "follow_ups": {
+      "type": "array",
+      "description": "Work that should follow this card; each becomes a todo card after the merge.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "feature",
+              "fix",
+              "chore",
+              "docs",
+              "spike"
+            ]
+          },
+          "risk": {
+            "type": "string",
+            "description": "The follow-up card's risk (default medium).",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "why"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "verdict",
+    "summary",
+    "accepted",
+    "rejected",
+    "instructions"
+  ],
+  "additionalProperties": false
+}

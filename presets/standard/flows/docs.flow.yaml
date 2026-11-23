@@ -1,0 +1,26 @@
+id: docs
+description: Documentation-only cards.
+phases:
+  - id: write
+    role: docs-writer
+    on: {fail: remediate}
+  - id: gate
+    gate: default
+    on: {fail: remediate}
+  - id: review
+    role: reviewer
+  - id: adjudicate
+    role: adjudicator
+    when: "findings.blocking > 0"
+    on: {reject: remediate}
+  - id: merge
+    action: merge
+    stop: {when: "adjudication.conditions > 0", ask: conditions}
+  - id: reflect
+    role: reflector
+    action: memory.update
+  - id: sync
+    action: docs.sync
+remediate:
+  phase: write
+  max_rounds: 2

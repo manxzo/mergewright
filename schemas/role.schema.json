@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/role",
+  "title": "MergeWright role",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "runs": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "A built-in harness (claude, codex, local, shell, mock) or one an installed package contributes."
+    },
+    "model": {
+      "type": "string"
+    },
+    "fallback_model": {
+      "type": "string",
+      "description": "Alternate model on the same harness, tried once after transient retries on 'model' are spent."
+    },
+    "provider": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "string"
+    },
+    "command": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "advise",
+        "read",
+        "write"
+      ]
+    },
+    "output": {
+      "type": "string",
+      "enum": [
+        "brief",
+        "handoff",
+        "findings",
+        "adjudication",
+        "reflection",
+        "text"
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "turns": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minutes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "mcps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "uniqueItems": true
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Extra arguments passed to the harness command."
+    }
+  },
+  "required": [
+    "id",
+    "runs",
+    "mode",
+    "output"
+  ],
+  "additionalProperties": false
+}

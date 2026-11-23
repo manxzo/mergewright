@@ -1,0 +1,167 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/flow",
+  "title": "MergeWright flow",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "worktree": {
+      "type": "boolean"
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "role": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "gate": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "merge",
+              "memory.update",
+              "docs.sync",
+              "notify"
+            ]
+          },
+          "also": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "when": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Condition expression, e.g. 'risk >= high'."
+                }
+              },
+              "required": [
+                "role"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "needs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            }
+          },
+          "when": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Condition expression, e.g. 'risk >= high'."
+          },
+          "stop": {
+            "description": "One stop point, or a list of them checked in order.",
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "when": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Condition expression, e.g. 'risk >= high'."
+                  },
+                  "ask": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                  }
+                },
+                "required": [
+                  "when",
+                  "ask"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "when": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Condition expression, e.g. 'risk >= high'."
+                    },
+                    "ask": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                  },
+                  "required": [
+                    "when",
+                    "ask"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            ]
+          },
+          "on": {
+            "type": "object",
+            "propertyNames": {
+              "enum": [
+                "fail",
+                "reject",
+                "block"
+              ]
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "remediate": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "max_rounds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "phase"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "phases"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.mergewright/
+*.log
+build/
+*.tgz
+# File-sync temporary and conflict files
+.*.tmp
+*.sync-conflict-*

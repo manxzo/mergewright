@@ -1,0 +1,19 @@
+name: notebook-opennotelm
+version: 0.1.0
+description: Mirrors the project's documentation into an OpenNoteLM notebook (one uploaded source per file, replaced when it changes).
+apiVersion: 1
+entry: index.mjs
+exports: [docsSync, deliverers, commands, checks]
+config:
+  type: object
+  additionalProperties: false
+  required: [url]
+  properties:
+    url:
+      type: string
+      description: The OpenNoteLM server, e.g. http://127.0.0.1:3000 (the /api prefix is added when missing; its host must be in OpenNoteLM's ALLOWED_HOSTS)
+    name:
+      type: string
+      minLength: 1
+      maxLength: 200
+      description: The notebook's title; default the project's name

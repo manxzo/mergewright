@@ -1,0 +1,2 @@
+# Private-detail hits still allowed per tracked file (path:count). Counts may only go down.
+# Regenerate with: MW_SCRUB_TERMS=<terms file> npm run scrub:update

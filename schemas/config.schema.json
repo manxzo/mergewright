@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/config",
+  "title": "MergeWright config",
+  "type": "object",
+  "properties": {
+    "mergewright": {
+      "type": "string",
+      "enum": [
+        "0.1"
+      ],
+      "description": "Specification version this project targets."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "extends": {
+      "type": "string",
+      "description": "Preset to inherit roles, flows, gates and mcps from."
+    },
+    "cards": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]{0,9}$"
+        },
+        "default_flow": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "mirror": {
+          "type": "string",
+          "enum": [
+            "none"
+          ],
+          "description": "Kept for older configs; only none. A board mirror is a package (for example cline-kanban)."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "git": {
+      "type": "object",
+      "properties": {
+        "base": {
+          "type": "string"
+        },
+        "hub": {
+          "type": "string",
+          "description": "Git remote that holds the shared repository state, or 'none'."
+        },
+        "forge": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "none",
+                "gitea",
+                "github"
+              ]
+            },
+            "url": {
+              "type": "string"
+            },
+            "repo": {
+              "type": "string"
+            },
+            "token_env": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "protected": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risk": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "deep_review": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "rounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "turns": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "diff_chars": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "lease_minutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "transient_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Attempts again on the same model after a transient harness failure (capacity, overload, HTTP 429 or 5xx, a request timeout, a reset connection), with a growing wait; then the role's fallback_model once (default 2)."
+        },
+        "phase_visits": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 6
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "trace": {
+      "type": "object",
+      "properties": {
+        "tests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "require_tests": {
+          "type": "string",
+          "enum": [
+            "none",
+            "must",
+            "should"
+          ]
+        },
+        "require_implements": {
+          "type": "boolean"
+        },
+        "ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Paths whose @req comments are not counted (fixtures, vendored code)."
+        },
+        "raw_days": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 14,
+          "description": "Days the raw stdout and stderr streams of a finished run are kept; 'mw work' deletes older ones at the start of each pass. State, artifacts and the audit trail are kept."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "memory": {
+      "type": "object",
+      "properties": {
+        "state_max_lines": {
+          "type": "integer",
+          "minimum": 10
+        },
+        "rules_max_lines": {
+          "type": "integer",
+          "minimum": 10
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "docs": {
+      "type": "object",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Globs of files under docs.paths that are not documentation to sync (left out silently)."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "roles": {
+      "type": "object",
+      "description": "Per-role overrides without ejecting the role file.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "runs": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "A built-in harness (claude, codex, local, shell, mock) or one an installed package contributes."
+          },
+          "model": {
+            "type": "string"
+          },
+          "fallback_model": {
+            "type": "string",
+            "description": "Alternate model on the same harness, tried once after transient retries are spent; overrides the role file's fallback_model."
+          },
+          "provider": {
+            "type": "string"
+          },
+          "profile": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "local_models": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        },
+        "fallback": {
+          "type": "string"
+        },
+        "key_env": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "report": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Command run at stage boundaries; {subject} and {file} are substituted."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "pause_at_pct": {
+          "type": "number"
+        },
+        "resume_below_pct": {
+          "type": "number"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "env": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "description": "Names of environment variables gates may see (for example DATABASE_URL). Gates otherwise get a minimal environment."
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Names of gate steps that must run: a gate result that marks one of them skipped fails the gate (gate/required-skipped)."
+        }
+      }
+    },
+    "packages": {
+      "type": "object",
+      "description": "Enabled packages (installed in .mergewright/packages/<name>/ by 'mw add'), each with its own settings, checked against the package's manifest.",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ]
+      }
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "sandbox": {
+          "enum": [
+            "auto",
+            "off",
+            "required"
+          ],
+          "description": "How write-mode Claude agents are confined: auto (use the shell sandbox when it works, else run unconfined with one warning per run), off (the host is isolated: never probe, never warn), required (a write phase refuses to start without a working sandbox). MW_SANDBOX overrides it per machine."
+        }
+      }
+    }
+  },
+  "required": [
+    "mergewright",
+    "name"
+  ],
+  "additionalProperties": false
+}

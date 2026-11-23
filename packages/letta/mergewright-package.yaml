@@ -1,0 +1,40 @@
+name: letta
+version: 0.1.0
+description: Lessons and decisions in the archival memory of a self-hosted Letta server (one agent per project), searched for the prompt's recall and for mw memory search.
+apiVersion: 1
+entry: index.mjs
+exports: [recall, search, remember, tools, checks]
+secrets:
+  - { config: key_env, default: LETTA_SERVER_PASSWORD }
+config:
+  type: object
+  additionalProperties: false
+  required: [url, model, embedding]
+  properties:
+    url:
+      type: string
+      description: The Letta API base, e.g. http://192.0.2.10:8283
+    agent:
+      type: string
+      description: Agent name prefix; the agent is <agent>-<project name> (default mergewright)
+    key_env:
+      type: string
+      pattern: "^[A-Za-z_][A-Za-z0-9_]*$"
+      description: The environment variable that holds the server password (sent as a Bearer token); default LETTA_SERVER_PASSWORD
+    model:
+      type: string
+      description: Chat model handle the agent is created with (required), e.g. openai/gpt-4o-mini, or openai-proxy/<model> for an OpenAI-compatible server behind Letta's OpenAI provider
+    embedding:
+      type: string
+      description: Embedding model, the model name served at embedding_endpoint, or a Letta handle (ollama/<model>) when there is no endpoint (required), e.g. openai/text-embedding-3-small
+    embedding_endpoint:
+      type: string
+      description: OpenAI-compatible embeddings endpoint as the Letta server reaches it; the agent is then created with an explicit embedding_config (no default)
+    embedding_dim:
+      type: integer
+      minimum: 1
+      description: Dimensions of the embedding model at embedding_endpoint (default 1024)
+    write_timeout_ms:
+      type: integer
+      minimum: 1
+      description: Timeout of one write (archival insert, agent creation) in milliseconds (default 60000); reads keep 30000

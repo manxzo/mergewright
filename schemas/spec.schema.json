@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/spec",
+  "title": "MergeWright spec",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "accepted",
+        "deprecated"
+      ]
+    },
+    "grammar": {
+      "type": "string",
+      "enum": [
+        "feature"
+      ]
+    },
+    "owner": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "status"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,15 @@
+name: echo
+version: 1.2.3
+description: A test package that echoes what it is given.
+apiVersion: 1
+entry: index.mjs
+exports: [deliverers, recall, search, harness, commands, tools, checks]
+harnesses: [echo]
+secrets:
+  - ECHO_FIXTURE_TOKEN
+config:
+  type: object
+  additionalProperties: false
+  properties:
+    log_file: { type: string }
+    greeting: { type: string }

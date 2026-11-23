@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/card",
+  "title": "MergeWright card",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{0,9}-[0-9]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "feature",
+        "fix",
+        "chore",
+        "docs",
+        "spike"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "ready",
+        "in_progress",
+        "review",
+        "blocked",
+        "done"
+      ]
+    },
+    "implements": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^REQ-[a-z][a-z0-9-]*-[0-9]{3,}$"
+      },
+      "uniqueItems": true
+    },
+    "revs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "description": "Requirement revisions this card was written against (managed)."
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "risk": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "deep_review": {
+      "type": "boolean"
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "depends": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9]{0,9}-[0-9]+$"
+      },
+      "uniqueItems": true
+    },
+    "docs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allow_protected": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Protected paths the owner lets this card write."
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "status"
+  ],
+  "additionalProperties": false
+}

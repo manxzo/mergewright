@@ -1,0 +1,14 @@
+name: cline-kanban
+version: 0.1.0
+description: Mirrors each card's status on a Cline Kanban board through the kanban CLI, reconciles the board from the board machine, and adds the board's MCP tools.
+apiVersion: 1
+entry: index.mjs
+exports: [mirrorCard, reconcile, deliverers, commands, tools, checks]
+config:
+  type: object
+  additionalProperties: false
+  properties:
+    path:
+      type: string
+      pattern: "^/"
+      description: The project's path as the board knows it (an absolute path, the project's checkout on the machine where the board runs); default this checkout's root

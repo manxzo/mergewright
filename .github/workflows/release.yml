@@ -1,0 +1,67 @@
+# Release: on a pushed tag v*, build the single executable on a native runner per platform, prove
+# each one on a clean machine, then publish them with one combined SHA256SUMS.
+# Actions are pinned by major tag. Node is pinned to 24.21.0: the package loader was proven on it.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { os: ubuntu-latest, target: linux-x64 }
+          - { os: ubuntu-24.04-arm, target: linux-arm64 }
+          - { os: macos-latest, target: darwin-arm64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.21.0"
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: node --test --test-reporter=dot 'test/**/*.test.ts'
+        env:
+          MW_DELEGATE_ALLOW_MOCK: "1"
+      - run: scripts/build-binary.sh
+      - name: check the target name
+        run: test -x "build/mw-${{ matrix.target }}"
+      - run: scripts/clean-machine-test.sh "build/mw-${{ matrix.target }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mw-${{ matrix.target }}
+          path: |
+            build/mw-${{ matrix.target }}
+            build/SHA256SUMS
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mw-*
+          path: dist
+      - name: combine the checksums and check them
+        working-directory: dist
+        run: |
+          cat mw-*/SHA256SUMS | sort -k2 > SHA256SUMS
+          mv mw-*/mw-* .
+          sha256sum -c SHA256SUMS
+          test "$(wc -l < SHA256SUMS)" -eq 3
+      - name: create the release
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes mw-linux-x64 mw-linux-arm64 mw-darwin-arm64 SHA256SUMS

@@ -1,0 +1,23 @@
+name: open-notebook
+version: 0.1.0
+description: Mirrors the project's documentation into an Open Notebook notebook (one text source per file) and searches and asks it, for mw docs search and the docs tools.
+apiVersion: 1
+entry: index.mjs
+exports: [docsSync, deliverers, searchDocs, commands, tools, checks]
+secrets:
+  - { config: key_env, default: OPEN_NOTEBOOK_PASSWORD }
+config:
+  type: object
+  additionalProperties: false
+  required: [url]
+  properties:
+    url:
+      type: string
+      description: The Open Notebook API, e.g. http://192.0.2.10:5055 (the /api prefix is added when missing)
+    name:
+      type: string
+      description: The notebook's name; default the project's name
+    key_env:
+      type: string
+      pattern: "^[A-Za-z_][A-Za-z0-9_]*$"
+      description: The environment variable that holds the Open Notebook password (sent as a Bearer token; unset means no authentication); default OPEN_NOTEBOOK_PASSWORD

@@ -1,0 +1,35 @@
+id: standard
+description: Brief, implement, gate, independent review, adjudicate, merge, reflect.
+phases:
+  - id: brief
+    role: planner
+  - id: implement
+    role: worker
+    needs: [brief]
+    stop: {when: "risk >= high", ask: go}
+    on: {fail: remediate}
+  - id: gate
+    gate: default
+    on: {fail: remediate}
+  - id: review
+    role: reviewer
+    also:
+      - {role: reviewer-deep, when: "deep_review or risk >= high"}
+      - {role: redteam, when: "risk >= critical"}
+  - id: adjudicate
+    role: adjudicator
+    when: "findings.blocking > 0 or risk >= high"
+    on: {reject: remediate}
+  - id: merge
+    action: merge
+    stop:
+      - {when: "adjudication.conditions > 0", ask: conditions}
+      - {when: "risk >= high", ask: merge}
+  - id: reflect
+    role: reflector
+    action: memory.update
+  - id: docs
+    action: docs.sync
+remediate:
+  phase: implement
+  max_rounds: 2

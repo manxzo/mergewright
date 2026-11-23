@@ -1,0 +1,47 @@
+{
+  "name": "mergewright",
+  "version": "0.1.0",
+  "description": "A language- and codebase-agnostic framework for building software with a team of AI agents.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "mw": "bin/mw.js",
+    "mergewright": "bin/mw.js"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "presets",
+    "schemas",
+    "template",
+    "ops",
+    "packages",
+    "src/ui/web",
+    "scripts/install-service.sh",
+    "docs/specification.md",
+    "docs/install.md"
+  ],
+  "scripts": {
+    "test": "node --test --test-reporter=dot 'test/**/*.test.ts'",
+    "test:verbose": "node --test 'test/**/*.test.ts'",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "check": "npm run typecheck && npm test",
+    "scrub:update": "node scripts/scrub-update.ts",
+    "build:binary": "scripts/build-binary.sh",
+    "test:release": "MW_RELEASE_TEST=1 node --test test/release.test.ts"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "postject": "^1.0.0-alpha.6",
+    "typescript": "^5.9.0"
+  }
+}

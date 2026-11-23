@@ -1,0 +1,8 @@
+name: hermes
+version: 0.1.0
+description: The Hermes agent as a harness roles can name in runs (advisory, one query per phase), and mw hermes init, status and remove, which register this project's MCP server and the mergewright skill with Hermes.
+apiVersion: 1
+entry: index.mjs
+exports: [harness, commands, checks]
+harnesses: [hermes]
+env: [HERMES_HOME, MW_HERMES_SHARED_SKILLS, MW_ROLE]

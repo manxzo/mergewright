@@ -1,0 +1,48 @@
+# Unattended MergeWright work for one project: runs every card marked `ready`, in order, whenever
+# this machine may drive the project (no other machine holds a fresh lease), and waits otherwise.
+#
+# The unit is a template: __USER__ and __HOME__ are placeholders that scripts/install-service.sh
+# fills in with the user who runs it (through sudo) and that user's home directory.
+# Install for ~/workspace/<name>:                             sudo scripts/install-service.sh work <name>
+# Update the shared unit after a change (no restart):         sudo scripts/install-service.sh unit
+# (scripts/install.sh does that last step itself when it can; otherwise it prints the command.)
+# Watch:  journalctl -u mw-work@<name> -f
+#
+# Stop and restart (REQ-engine-011): a stop or restart waits for the current card.
+# `systemctl stop|restart mw-work@<name>` sends SIGTERM to the `mw work` process only (KillMode=mixed);
+# the agent, gate and delivery processes of the current card keep running, the card finishes, `mw work`
+# exits 0 and the unit stops (or starts again). That can take up to TimeoutStopSec, after which systemd
+# kills everything left; `systemctl restart --no-block` returns at once instead of waiting. To stop at
+# once, give `mw work` a second signal while the stop waits (it stops the current phase; the card
+# continues from its last finished phase on the next run):
+#   systemctl stop --no-block mw-work@<name>
+#   systemctl kill --kill-whom=main -s SIGINT mw-work@<name>
+#
+# It never answers a stop point on its own: high-risk cards wait for `mw approve`.
+[Unit]
+Description=MergeWright unattended work for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=__USER__
+WorkingDirectory=__HOME__/workspace/%i
+Environment=PATH=__HOME__/.local/bin:__HOME__/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
+# On a host that is isolated already (a disposable VM), turn the Claude write sandbox off: no probe and
+# no warning per run (spec 8.6). The same line can go in ~/.config/mergewright/env instead.
+#Environment=MW_SANDBOX=off
+ExecStart=__HOME__/.local/bin/mw work --watch --interval 60
+# A stop after the card ends with exit 0 and an immediate stop with 130: neither is a failure, so
+# neither is restarted. Anything else that ends `mw work` is restarted after RestartSec.
+Restart=on-failure
+RestartSec=30
+SuccessExitStatus=130
+# Only `mw work` gets the stop signal; its children (agent, gate, deliveries) are left to finish the card.
+# They get SIGKILL only if the card is not finished within TimeoutStopSec (4 hours: longer than a card
+# with a 90-minute phase limit normally takes).
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=14400
+
+[Install]
+WantedBy=multi-user.target

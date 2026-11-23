@@ -1,0 +1,5 @@
+# MergeWright: runtime working data is local to each checkout
+.mergewright/
+# File-sync tools: files they leave while copying and when two machines changed a file at once
+.*.tmp
+*.sync-conflict-*

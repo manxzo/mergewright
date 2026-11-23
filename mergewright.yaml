@@ -1,0 +1,61 @@
+# MergeWright project config. Run `mw check` after editing; `mw config set <key> <value>` validates for you.
+mergewright: "0.1"
+name: mergewright
+description: "A language- and codebase-agnostic framework for building software with a team of AI agents."
+extends: standard                 # preset that supplies roles, flows and gates; files here override it
+
+cards:
+  prefix: MW              # card ids look like MW-12
+  default_flow: standard
+
+git:
+  base: main
+  hub: none                       # git remote holding the shared repository state, or "none"
+  forge: {kind: none}             # gitea | github | none (none = merge locally, no pull requests)
+
+risk:
+  default: medium                 # low | medium | high | critical; high and above stop for you
+
+limits:
+  rounds: 2                       # fix rounds before a card stops and asks
+  turns: 60
+  minutes: 90
+
+trace:
+  require_tests: must             # none | must | should: which finished requirements need a test
+  # src/, the top-level test files and fixtures hold example '@req' comments, not real links.
+  # Requirement-tagged tests live in test/req/ (counted).
+  ignore:
+    - test/*.ts
+    - test/fixtures/**
+    - template/**
+    - presets/**
+    - schemas/**
+    - src/**
+
+docs:
+  paths: [docs/**, README.md, AGENTS.md]
+
+# Which agent and model fill a role, where it differs from the preset's.
+roles:
+  worker:
+    model: opus
+  docs-writer:
+    model: sonnet
+
+gate:
+  required:
+    - typecheck
+    - test
+protected:
+  - specs/*.spec.md
+  - memory/RULES.md
+  - mergewright.yaml
+  - roles/**
+  - flows/**
+  - gates/**
+  - mcps/**
+  - docs/adr/**
+  - AGENTS.md
+  - CLAUDE.md
+  - docs/specification.md

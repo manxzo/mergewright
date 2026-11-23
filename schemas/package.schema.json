@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/package",
+  "title": "MergeWright package manifest (mergewright-package.yaml)",
+  "description": "Experimental: the package API may change between releases (apiVersion says which one a package is written for).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "version", "description", "apiVersion", "entry"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "The package's name: its folder under .mergewright/packages/ and its key under packages: in mergewright.yaml."
+    },
+    "version": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "apiVersion": { "type": "integer", "minimum": 1, "description": "The package API version the entry is written for." },
+    "entry": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$)).+\\.(mjs|js|ts|mts)$",
+      "description": "Path of the ES module entry, relative to the package folder (.mjs, .js with type module, or .ts/.mts using erasable syntax only)."
+    },
+    "exports": {
+      "type": "array",
+      "items": { "enum": ["deliverers", "recall", "search", "searchDocs", "remember", "docsSync", "mirrorCard", "reconcile", "harness", "commands", "tools", "checks"] },
+      "uniqueItems": true,
+      "description": "What the entry's activate() returns, shown before installing (the entry is not run until it is installed)."
+    },
+    "harnesses": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+      "uniqueItems": true,
+      "description": "Harness ids the package contributes, which roles may name in runs: once the package is installed and enabled."
+    },
+    "config": {
+      "type": "object",
+      "description": "JSON Schema of the package's own settings, packages.<name> in mergewright.yaml."
+    },
+    "env": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+      "uniqueItems": true,
+      "description": "Environment variables that are not secrets which host.env() may read as well (a tool's home folder, say). Their values are not redacted."
+    },
+    "secrets": {
+      "type": "array",
+      "description": "Environment variables whose values are secrets: redacted from tool output and run files, and the only ones host.env() reads. A string names the variable; {config, default} names the setting of packages.<name> that holds the variable's name.",
+      "items": {
+        "oneOf": [
+          { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["config", "default"],
+            "properties": {
+              "config": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" },
+              "default": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

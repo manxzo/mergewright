@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mergewright.dev/schemas/0.1/output/handoff",
+  "title": "MergeWright output: handoff",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "done",
+        "blocked"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "changed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verified": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "not_done": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "docs_updated": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "summary",
+    "changed",
+    "verified",
+    "not_done",
+    "docs_updated",
+    "notes"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+name: echo-ts
+version: 0.1.0
+description: The echo test package, written in TypeScript.
+apiVersion: 1
+entry: index.ts
+exports: [recall]
