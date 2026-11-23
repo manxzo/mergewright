@@ -2489,11 +2489,11 @@ anything the other machine sees. The lock is written completely under a temporar
 published under its real name with `link()`, which fails when the name exists, so no process ever
 sees a half-written lock and of two processes starting at once exactly one gets it.
 
-A lock names its process by pid and, where `/proc` exists, by the process start time (field 22 of
-`/proc/<pid>/stat`); the guard and the orphans record below carry the same identity. A recorded
+A lock names its process by pid and, where it can be read, by the process start time (on Linux field
+22 of `/proc/<pid>/stat`, on macOS the start time `ps` reports, in seconds); the guard and the orphans record below carry the same identity. A recorded
 process counts as alive only while a process with that pid exists, is not a zombie (state `Z`), and
 started at the recorded time: a pid the operating system has given to another process counts as
-dead. Without `/proc`, and for a record written without a start time, the pid alone decides. A
+dead. Where the start time cannot be read, and for a record written without one, the pid alone decides. A
 lock whose process is no longer alive, or an unreadable one, is replaced.
 
 Taking a lock and reclaiming a stale one happen under a short-lived guard (a `.guard` folder created
@@ -2774,7 +2774,7 @@ base branch are removed (section 9.4).
 
 Only one machine drives a project at a time. The lease is a git reference on the hub,
 `refs/mergewright/lease`, pointing at a commit whose message is the JSON `{host, pid, time}`, plus
-`started` (the process's start time, where `/proc` gives it) and `kept: true` for a lease the owner
+`started` (the process's start time, where it can be read) and `kept: true` for a lease the owner
 holds on purpose (`mw lease take`, or `--keep-lease` at the end of a run). A
 machine is named by its host name, or by `MW_HOST` when that is set. Taking or refreshing the lease
 is a compare-and-swap push (`git push --force-with-lease`), so two machines can never both win.
@@ -2890,8 +2890,8 @@ status the card has since left, section 10.5); `mw queue flush` then removes it 
 
 An item recorded under the repository lock by a locked MCP tool (section 12.5) is held for the
 process that recorded it: the item names it (`holdPid`, the process id; `holdSince`, an ISO time for
-people reading the queue; and, where `/proc` exists, `holdStart`, the process's start time from
-`/proc/<pid>/stat`), the only change to the item format apart from the breaker's file. A hold lasts as
+people reading the queue; and, where it can be read, `holdStart`, the process's start time, the
+same as a lock's), the only change to the item format apart from the breaker's file. A hold lasts as
 long as that process: while a process with that id exists (also one of another user) and, when
 `holdStart` is recorded, still has that start time, no flush delivers the item, however old the hold
 is; it is skipped like an item skipped by the budget (no request, the file and its attempt count
