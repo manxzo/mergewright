@@ -245,8 +245,13 @@ export function listFiles(dir: string, suffix: string): string[] {
 /** True if `file` (repo-relative, forward slashes) matches any of the globs. `dir/**` also matches `dir`'s contents at any depth. */
 export function matchesAny(file: string, globs: readonly string[]): boolean {
   const f = file.split(path.sep).join("/");
-  return globs.some((g) => path.matchesGlob(f, g) || (g.endsWith("/**") && f.startsWith(g.slice(0, -2))));
+  return globs.some((g) => path.matchesGlob(cased(f), cased(g)) || (g.endsWith("/**") && f.startsWith(g.slice(0, -2))));
 }
+
+// path.matchesGlob ignores case in wildcard segments on macOS ('latest.js' would match '*Test.*'). Mapping
+// A-Z to private-use characters, one for one, keeps the match case-sensitive there, as on Linux.
+// shortcut: only ASCII capitals are mapped; a non-ASCII capital in a wildcard segment still matches either case.
+const cased = process.platform === "darwin" ? (s: string) => s.replace(/[A-Z]/g, (c) => String.fromCharCode(0xe000 + c.charCodeAt(0))) : (s: string) => s;
 
 export function toPosix(p: string): string {
   return p.split(path.sep).join("/");
