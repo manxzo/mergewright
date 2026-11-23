@@ -132,7 +132,7 @@ export interface PackageHost {
   sshAgent(): string | undefined;
   /**
    * Which process instance a pid names (pids are reused): `identity` gives its start time where
-   * `/proc` exists, and `alive` is false when no process has that pid or its start time differs.
+   * it can be read (`/proc` on Linux, `ps` on macOS), and `alive` is false when no process has that pid or its start time differs.
    */
   readonly process: {
     identity(pid: number): { pid: number; started?: string };

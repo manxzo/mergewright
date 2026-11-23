@@ -168,7 +168,7 @@ export interface LockInfo {
   host: string;
   /** When the run took the lock (wall clock, ISO), for messages. */
   started: string;
-  /** The holder's process start time from /proc; absent without /proc. */
+  /** The holder's process start time (from /proc, or ps on macOS); absent where it cannot be read. */
   procStart?: string;
 }
 

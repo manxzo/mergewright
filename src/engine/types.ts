@@ -221,7 +221,7 @@ export interface Lease {
   pid: number;
   /** ISO time the lease was taken or last refreshed. */
   time: string;
-  /** The start time of process `pid` (from /proc), so a reused pid is not taken for it. */
+  /** The start time of process `pid` (from /proc, or ps on macOS), so a reused pid is not taken for it. */
   started?: string;
   /** Taken by the owner (`mw lease take`, `--keep-lease`): never stale because its process is gone. */
   kept?: boolean;
