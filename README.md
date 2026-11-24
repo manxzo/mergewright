@@ -1,5 +1,11 @@
 # MergeWright
 
+[![CI](https://github.com/manxzo/mergewright/actions/workflows/ci.yml/badge.svg)](https://github.com/manxzo/mergewright/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/manxzo/mergewright)](https://github.com/manxzo/mergewright/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Node 24+](https://img.shields.io/badge/node-%E2%89%A5%2024-brightgreen)
+![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS-lightgrey)
+
 MergeWright runs a team of AI coding agents through a fixed, checkable process. Every piece of work
 is a card. A card is briefed, implemented on its own branch, checked by the project's own gate,
 reviewed by a model from a different vendor, adjudicated when the review found problems, merged,
@@ -18,6 +24,8 @@ not the product: product code can be in any language and any layout.
 card -> brief -> implement -> gate -> review -> adjudicate -> merge -> reflect -> docs sync
         planner   worker      gate.sh  reviewers adjudicator   mw       reflector   mw
 ```
+
+![The MergeWright board in the browser: cards grouped by status, with one waiting for approval](docs/images/board.jpg)
 
 The complete reference is [docs/specification.md](docs/specification.md).
 
@@ -254,6 +262,12 @@ docs/                     the specification, install guide, package guide and de
 
 This repository is itself a MergeWright project: its own `mergewright.yaml`, `specs/`, `cards/`,
 `memory/` and `gates/` are at the root.
+
+## Contributing
+
+Bug reports, fixes and new packages are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Report
+security problems privately, as [SECURITY.md](SECURITY.md) describes. Changes are listed in
+[CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

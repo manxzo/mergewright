@@ -4,6 +4,25 @@
   "description": "A language- and codebase-agnostic framework for building software with a team of AI agents.",
   "type": "module",
   "license": "MIT",
+  "author": "manxzo",
+  "homepage": "https://github.com/manxzo/mergewright#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manxzo/mergewright.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manxzo/mergewright/issues"
+  },
+  "keywords": [
+    "ai-agents",
+    "agentic-coding",
+    "claude-code",
+    "codex",
+    "mcp",
+    "cli",
+    "developer-tools",
+    "code-review"
+  ],
   "bin": {
     "mw": "bin/mw.js",
     "mergewright": "bin/mw.js"
